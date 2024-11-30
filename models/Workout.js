@@ -14,6 +14,10 @@ const workoutSchema = new mongoose.Schema({
         type: String,
         default: 'Pending'
     },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
     dateAdded: {
         type: Date,
         default: Date.now,

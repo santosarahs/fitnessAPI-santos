@@ -1,16 +1,19 @@
 const Workout = require("../models/Workout");
 
 module.exports.addWorkout = (req,res) => {
+    const {id} = req.user;
 
 	let newWorkout = new Workout({
 		name : req.body.name,
 		duration : req.body.duration,
         status : req.body.status,
-        userId: req.user.id
+        userId: id
 	});
 
+    console.log(id)
+
 	newWorkout.save()
-	.then(savedWorkout => res.status(201).send(savedWorkout))
+	.then(savedWorkout => res.status(201).send({workout: savedWorkout, id: id}))
 	.catch(saveErr => {
 
 		console.error("Error in saving the workout: ", saveErr)
@@ -20,21 +23,26 @@ module.exports.addWorkout = (req,res) => {
 };
 
 // Add getMyWorkouts, that only shows workout added of the logged in users.
-module.exports.getMyWorkouts = (req, res) => {
-    const userId = req.user.id;
+module.exports.getMyWorkouts = async (req, res) => {
 
-    Workout.find({ userId: userId })
-    .then(workouts => {
-        if (workouts.length > 0) {
-            return res.status(200).send({ workouts });
+    try {
+        const {id} = req.user;
+        console.log(id)
+
+        const workouts = await Workout.find({userId: id});
+
+        if(workouts.length === 0){
+            return res.status(404).send({message: 'No workouts found'})
         } else {
-            return res.status(404).send({ message: 'No workouts found for the logged-in user.' });
+            return res.status(200).send({workouts: workouts})
         }
-    })
-    .catch(err => {
+
+        console.log(workouts)
+    } catch (error) {
         console.error("Error in fetching workouts: ", err);
         return res.status(500).send({ error: 'Error in fetching workouts.' });
-    });
+    }
+    
 };
 
 
