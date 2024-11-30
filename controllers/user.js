@@ -1,3 +1,5 @@
+// Add controller for router.get("/details", userController.getUserDetails);
+
 const bcrypt = require('bcrypt');
 const User = require("../models/User");
 
@@ -17,7 +19,7 @@ module.exports.registerUser = (req, res) => {
         })
 
         return newUser.save()
-        .then((user) => res.status(201).send({ message: "Registered Successfully "}))
+        .then((user) => res.status(201).send({ message: "Registered Successfully"}))
         .catch(err => {
             console.error("Error is saving: ", err)
             return res.status(500).send({ error: "Error is save" })
@@ -55,4 +57,29 @@ module.exports.loginUser = (req,res) => {
 	} else {
 	    return res.status(400).send(false)
 	}
+};
+
+
+module.exports.getUserDetails = (req, res) => {
+    const userId = req.user.id;
+
+    User.findById(userId)
+        .select("_id email __v") // Only select the fields you want to return
+        .then(user => {
+            if (!user) {
+                return res.status(404).send({ error: "User not found" });
+            }
+
+            res.status(200).send({
+                user: {
+                    _id: user._id,
+                    email: user.email,
+                    __v: user.__v
+                }
+            });
+        })
+        .catch(err => {
+            console.error("Error fetching user details: ", err);
+            res.status(500).send({ error: "Internal server error" });
+        });
 };

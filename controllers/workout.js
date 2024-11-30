@@ -4,16 +4,16 @@ module.exports.addWorkout = (req,res) => {
     const {id} = req.user;
 
 	let newWorkout = new Workout({
+        userId: id,
 		name : req.body.name,
 		duration : req.body.duration,
-        status : req.body.status,
-        userId: id
+        status : req.body.status
 	});
 
     console.log(id)
 
 	newWorkout.save()
-	.then(savedWorkout => res.status(201).send({workout: savedWorkout, id: id}))
+	.then(savedWorkout => res.status(201).send(savedWorkout))
 	.catch(saveErr => {
 
 		console.error("Error in saving the workout: ", saveErr)
@@ -48,13 +48,16 @@ module.exports.getMyWorkouts = async (req, res) => {
 
 module.exports.updateWorkout = (req, res) => {
 
+    const { id } = req.user;
+
 	let workoutUpdates = {
+        userId: id,
         name: req.body.name,
 		duration: req.body.duration,
         status: req.body.status
     }
 
-    return Workout.findByIdAndUpdate(req.params.id, workoutUpdates)
+    return Workout.findByIdAndUpdate(req.params.id, workoutUpdates, {new: true})
     .then(updatedWorkout => {
 
         if (!updatedWorkout) {
